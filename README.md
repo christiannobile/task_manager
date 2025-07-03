@@ -19,11 +19,13 @@ This project consists of two main parts:
 - [ ] Ensure backend URL is accessible and update frontend to use this URL.
 
 ### Frontend (GitHub Pages)
-- ✅ Build the React frontend (`npm run build`).
-- ✅ Commit and push the build output to GitHub repository.
-- ✅ Enable GitHub Pages in the repository settings (serve from `gh-pages` branch or `/docs` folder).
-- [ ] Ensure frontend communicates with the deployed backend URL.
+
+✅ Build the React frontend (`npm run build`).  
+✅ Commit and push the build output to GitHub repository.  
+✅ Enable GitHub Pages in the repository settings (serve from `gh-pages` branch or `/docs` folder).  
+- [ ] Ensure frontend communicates with the deployed backend URL.  
 - [ ] Test frontend live on GitHub Pages.
+
 
 ---
 
