@@ -4,5 +4,3 @@ __pycache__/
 *.pyd
 .env
 *.db
-.vscode/
-.DS_Store
