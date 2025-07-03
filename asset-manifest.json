@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/task-manager-frontend/static/js/main.0af2476c.js",
+    "main.js": "/task-manager-frontend/static/js/main.8ef5a06a.js",
     "index.html": "/task-manager-frontend/index.html",
-    "main.0af2476c.js.map": "/task-manager-frontend/static/js/main.0af2476c.js.map"
+    "main.8ef5a06a.js.map": "/task-manager-frontend/static/js/main.8ef5a06a.js.map"
   },
   "entrypoints": [
-    "static/js/main.0af2476c.js"
+    "static/js/main.8ef5a06a.js"
   ]
 }
