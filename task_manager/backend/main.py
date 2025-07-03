@@ -1,46 +1,65 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from uuid import uuid4, UUID
+import databases
+import sqlalchemy
+
+DATABASE_URL = "sqlite:///./tasks.db"
+
+database = databases.Database(DATABASE_URL)
+metadata = sqlalchemy.MetaData()
+
+tasks = sqlalchemy.Table(
+    "tasks",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("title", sqlalchemy.String, index=True),
+    sqlalchemy.Column("description", sqlalchemy.String, nullable=True),
+    sqlalchemy.Column("completed", sqlalchemy.Boolean, default=False),
+)
+
+engine = sqlalchemy.create_engine(DATABASE_URL)
+metadata.create_all(engine)
 
 app = FastAPI()
 
 class Task(BaseModel):
-    id: UUID
+    id: Optional[int] = None
     title: str
     description: Optional[str] = None
     completed: bool = False
 
-tasks = []
+@app.on_event("startup")
+async def startup():
+    await database.connect()
 
-@app.post("/tasks/", response_model=Task)
-def create_task(task: Task):
-    tasks.append(task)
-    return task
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
-@app.get("/tasks/", response_model=List[Task])
-def read_tasks():
-    return tasks
+@app.get("/tasks", response_model=List[Task])
+async def read_tasks():
+    query = tasks.select()
+    return await database.fetch_all(query)
 
-@app.get("/tasks/{task_id}", response_model=Task)
-def read_task(task_id: UUID):
-    for task in tasks:
-        if task.id == task_id:
-            return task
-    raise HTTPException(status_code=404, detail="Task not found")
+@app.post("/tasks", response_model=Task)
+async def create_task(task: Task):
+    query = tasks.insert().values(
+        title=task.title, description=task.description, completed=task.completed
+    )
+    last_record_id = await database.execute(query)
+    return {**task.dict(), "id": last_record_id}
 
 @app.put("/tasks/{task_id}", response_model=Task)
-def update_task(task_id: UUID, updated_task: Task):
-    for index, task in enumerate(tasks):
-        if task.id == task_id:
-            tasks[index] = updated_task
-            return updated_task
-    raise HTTPException(status_code=404, detail="Task not found")
+async def update_task(task_id: int, task: Task):
+    query = tasks.update().where(tasks.c.id == task_id).values(
+        title=task.title, description=task.description, completed=task.completed
+    )
+    await database.execute(query)
+    return {**task.dict(), "id": task_id}
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: UUID):
-    for index, task in enumerate(tasks):
-        if task.id == task_id:
-            tasks.pop(index)
-            return {"detail": "Task deleted"}
-    raise HTTPException(status_code=404, detail="Task not found")
+async def delete_task(task_id: int):
+    query = tasks.delete().where(tasks.c.id == task_id)
+    await database.execute(query)
+    return {"message": "Task deleted"}

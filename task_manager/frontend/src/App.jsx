@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:8000';
+const API_URL = 'http://localhost:8000';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -8,101 +8,68 @@ function App() {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE}/tasks/`)
-      .then(res => res.json())
-      .then(data => setTasks(data))
-      .catch(console.error);
+    fetchTasks();
   }, []);
 
-  const addTask = async () => {
-    if (!title.trim()) return;
+  async function fetchTasks() {
+    const res = await fetch(`${API_URL}/tasks`);
+    const data = await res.json();
+    setTasks(data);
+  }
 
-    const newTask = {
-      id: crypto.randomUUID(),
-      title,
-      description,
-      completed: false,
-    };
+  async function addTask() {
+    if (!title) return;
+    await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, completed: false }),
+    });
+    setTitle('');
+    setDescription('');
+    fetchTasks();
+  }
 
-    try {
-      const res = await fetch(`${API_BASE}/tasks/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
-      });
-      if (!res.ok) throw new Error('Failed to add task');
-      setTasks([...tasks, newTask]);
-      setTitle('');
-      setDescription('');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  async function toggleComplete(id, completed) {
+    await fetch(`${API_URL}/tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completed: !completed, title: tasks.find(t => t.id === id).title, description: tasks.find(t => t.id === id).description }),
+    });
+    fetchTasks();
+  }
 
-  const toggleComplete = async (id) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-    const updatedTask = { ...task, completed: !task.completed };
-
-    try {
-      const res = await fetch(`${API_BASE}/tasks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedTask),
-      });
-      if (!res.ok) throw new Error('Failed to update task');
-      setTasks(tasks.map(t => (t.id === id ? updatedTask : t)));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const deleteTask = async (id) => {
-    try {
-      const res = await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete task');
-      setTasks(tasks.filter(t => t.id !== id));
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  async function deleteTask(id) {
+    await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+    fetchTasks();
+  }
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: 'auto' }}>
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
       <h1>Task Manager</h1>
-      <div>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          style={{ width: '60%', marginRight: 8 }}
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          style={{ width: '30%', marginRight: 8 }}
-        />
-        <button onClick={addTask}>Add Task</button>
-      </div>
-      <ul style={{ marginTop: 20 }}>
+      <input
+        placeholder="Title"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        style={{ width: '100%', marginBottom: 10 }}
+      />
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        style={{ width: '100%', marginBottom: 10 }}
+      />
+      <button onClick={addTask}>Add Task</button>
+      <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
         {tasks.map(task => (
-          <li key={task.id} style={{ marginBottom: 10 }}>
+          <li key={task.id} style={{ marginTop: 10, padding: 10, border: '1px solid #ddd' }}>
             <input
               type="checkbox"
               checked={task.completed}
-              onChange={() => toggleComplete(task.id)}
-              style={{ marginRight: 8 }}
-            />
-            <strong>{task.title}</strong>: {task.description}
-            <button
-              onClick={() => deleteTask(task.id)}
-              style={{ marginLeft: 12, color: 'red' }}
-            >
-              Delete
-            </button>
+              onChange={() => toggleComplete(task.id, task.completed)}
+            />{' '}
+            <strong>{task.title}</strong>
+            <p>{task.description}</p>
+            <button onClick={() => deleteTask(task.id)}>Delete</button>
           </li>
         ))}
       </ul>
