@@ -39,9 +39,6 @@ function TaskList() {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-
   const handleAdd = () => {
     if (!title.trim()) return;
     createTask({ variables: { title, description } });
@@ -65,8 +62,10 @@ function TaskList() {
         style={{ marginRight: 8 }}
       />
       <button onClick={handleAdd}>Add Task</button>
+      {loading && <p>Loading tasks...</p>}
+      {error && <p style={{color: "red"}}>Could not load tasks. Backend may be down.</p>}
       <ul>
-        {data.tasks.map(task => (
+        {data && data.tasks && data.tasks.map(task => (
           <li key={task.id}>
             <b>{task.title}</b>: {task.description} {task.completed ? "(Done)" : ""}
           </li>
