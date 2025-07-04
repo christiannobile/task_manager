@@ -31,9 +31,9 @@ const CREATE_TASK = gql`
 `;
 
 function TaskList() {
-  const { loading, error, data, refetch } = useQuery(GET_TASKS);
+  const { loading, error, data, refetch } = useQuery(GET_TASKS, { fetchPolicy: "network-only" });
   const [createTask] = useMutation(CREATE_TASK, {
-    onCompleted: () => refetch()
+    onCompleted: () => refetch && refetch()
   });
 
   const [title, setTitle] = React.useState("");
@@ -45,6 +45,9 @@ function TaskList() {
     setTitle("");
     setDescription("");
   };
+
+  // Fallback to empty array if data is missing
+  const tasks = data && data.tasks ? data.tasks : [];
 
   return (
     <div style={{padding: 20}}>
@@ -63,9 +66,14 @@ function TaskList() {
       />
       <button onClick={handleAdd}>Add Task</button>
       {loading && <p>Loading tasks...</p>}
-      {error && <p style={{color: "red"}}>Could not load tasks. Backend may be down.</p>}
+      {error && (
+        <p style={{color: "red"}}>
+          Could not load tasks. Backend may be down or misconfigured.<br />
+          (You can still see the UI and add tasks when backend is ready.)
+        </p>
+      )}
       <ul>
-        {data && data.tasks && data.tasks.map(task => (
+        {tasks.map(task => (
           <li key={task.id}>
             <b>{task.title}</b>: {task.description} {task.completed ? "(Done)" : ""}
           </li>
