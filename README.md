@@ -7,27 +7,7 @@ This project consists of two main parts:
 
 ---
 
-## To Do List for Deployment
 
-### Backend (Google Cloud Free Tier)
-- [ ] Create a Google Cloud account if you don't have one.
-- [ ] Install and configure Google Cloud SDK (`gcloud` CLI).
-- [ ] Prepare a Docker image for the backend.
-- [ ] Push the Docker image to Google Container Registry (GCR).
-- [ ] Deploy the backend using Google Cloud Run (serverless container hosting).
-- [ ] Configure environment variables and CORS if needed.
-- [ ] Ensure backend URL is accessible and update frontend to use this URL.
-
-### Frontend (GitHub Pages)
-
-- [x] ~~Build the React frontend (`npm run build`).~~  
-- [x] ~~Commit and push the build output to GitHub repository.~~ 
-- [x] ~~Enable GitHub Pages in the repository settings (serve from `gh-pages` branch or `/docs` folder).~~  
-- [ ] Ensure frontend communicates with the deployed backend URL.  
-- [ ] Test frontend live on GitHub Pages.
-
-
----
 
 ## Running Locally
 
